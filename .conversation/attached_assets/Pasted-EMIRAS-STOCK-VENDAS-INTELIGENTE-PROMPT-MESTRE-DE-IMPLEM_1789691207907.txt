@@ -1,0 +1,1328 @@
+EMIRAS STOCK + VENDAS INTELIGENTE
+
+PROMPT MESTRE DE IMPLEMENTAÇÃO — REPLIT
+
+Atua simultaneamente como Software Architect, Senior Full-Stack Developer, Backend Developer, Frontend Developer, Database Architect, UX/UI Designer, Product Manager, QA Engineer e Security Engineer.
+
+Desenvolve um sistema comercial real chamado EMIRAS STOCK + VENDAS INTELIGENTE, destinado principalmente a pequenas e médias empresas em Angola.
+
+O sistema deve ser uma aplicação web full-stack real, funcional, segura, responsiva e preparada para utilização comercial. Não criar protótipos, mockups, botões falsos, dados fictícios apresentados como reais, páginas sem funcionalidade, autenticação simulada, dashboards estáticos ou formulários que não gravem dados.
+
+Todas as ações da interface devem estar ligadas ao backend e ao PostgreSQL. Se uma funcionalidade ainda não estiver implementada, não apresentar um botão que finja funcionar. Implementar corretamente ou identificá-la claramente como futura.
+
+---
+
+1. OBJETIVO E ESCOPO
+
+O sistema deve permitir controlar:
+
+- produtos
+- categorias
+- stock
+- entradas, saídas e ajustes de stock
+- vendas e itens vendidos
+- clientes
+- utilizadores e funcionários
+- relatórios
+- alertas
+- dashboard
+- histórico de operações
+- devoluções
+- auditoria
+
+O sistema deve substituir cadernos, folhas Excel, cálculos manuais e controlo manual de stock.
+
+O proprietário deve conseguir saber em tempo real:
+
+- quanto vendeu
+- quanto possui em stock
+- quais produtos estão com stock baixo
+- quais produtos estão esgotados
+- quais produtos vendem mais
+- quanto dinheiro movimentou
+- quais vendas foram realizadas
+- quem realizou cada operação
+
+Público-alvo:
+
+- lojas
+- minimercados
+- boutiques
+- lojas de eletrónica
+- lojas de acessórios
+- armazéns
+- distribuidores
+- pequenas e médias empresas
+- vendedores de produtos
+
+---
+
+2. STACK E PADRÕES TÉCNICOS
+
+Utilizar, preferencialmente:
+
+- Frontend: React, TypeScript e Vite
+- UI: Tailwind CSS e componentes reutilizáveis
+- Backend: Node.js e TypeScript
+- API: REST ou arquitetura equivalente bem estruturada
+- Banco de dados: PostgreSQL
+- ORM: Prisma ou alternativa moderna adequada ao Replit
+- Autenticação: sessões ou tokens seguros, com passwords protegidas por hash
+- Infraestrutura: Replit, PostgreSQL integrado/disponível e variáveis de ambiente
+
+Separar claramente:
+
+- frontend
+- backend
+- database
+- authentication
+- business logic
+- API
+- components
+- pages
+- services
+- validation
+- utilities
+- tests
+
+Evitar código duplicado e componentes gigantes. A arquitetura deve permitir adicionar módulos futuros sem reescrever o sistema.
+
+---
+
+3. REGRAS GERAIS DE IMPLEMENTAÇÃO
+
+1. Segurança tem prioridade sobre design.
+2. Integridade dos dados tem prioridade sobre velocidade de desenvolvimento.
+3. Toda regra crítica deve ser validada no backend.
+4. Nunca confiar apenas no frontend para autorização ou isolamento de dados.
+5. Todas as operações assíncronas devem possuir loading state.
+6. Todas as páginas devem possuir estados vazios úteis.
+7. Listagens grandes devem utilizar paginação ou carregamento eficiente.
+8. Erros técnicos devem ser registados nos logs, mas mensagens compreensíveis devem ser mostradas ao utilizador.
+9. Não utilizar localStorage ou dados no navegador como substituto do banco.
+10. Não utilizar números hardcoded no dashboard.
+11. Não declarar uma etapa concluída sem verificar arquivos, banco, APIs, erros e fluxos principais.
+12. Após cada fase, executar os comandos de validação definidos e corrigir os problemas encontrados.
+
+---
+
+4. FASE 0 — ANÁLISE E PLANEAMENTO
+
+Objetivo
+
+Definir a arquitetura, os limites do MVP e o plano técnico antes de implementar funcionalidades.
+
+Entregáveis
+
+Criar:
+
+- documento de arquitetura
+- mapa de módulos
+- diagrama ou descrição das entidades
+- matriz de permissões
+- lista de rotas frontend
+- lista de endpoints backend
+- plano de variáveis de ambiente
+- plano de testes
+- definição do que pertence ao MVP e do que ficará para depois
+
+Critérios de aceitação
+
+- A arquitetura separa frontend, backend, banco, autenticação e regras de negócio.
+- O isolamento multiempresa está definido.
+- As regras de stock e vendas estão documentadas.
+- As permissões de ADMIN e FUNCIONÁRIO estão documentadas.
+- Nenhuma funcionalidade futura é apresentada como concluída.
+- O plano identifica dependências entre módulos.
+
+Comandos Replit
+
+pwd
+find . -maxdepth 2 -type f | sort
+node --version
+npm --version
+git status
+
+Criar também um arquivo:
+
+mkdir -p docs
+touch docs/architecture.md docs/api.md docs/permissions.md docs/testing-plan.md
+
+---
+
+5. FASE 1 — ESTRUTURA DO PROJETO E CONFIGURAÇÃO DO REPLIT
+
+Objetivo
+
+Criar a base executável do projeto com scripts de desenvolvimento, produção, build e testes.
+
+Entregáveis
+
+- estrutura inicial do projeto
+- configuração TypeScript
+- configuração Vite
+- configuração Tailwind
+- servidor backend
+- endpoint de health check
+- scripts de desenvolvimento, build, start, lint e test
+- arquivo ".env.example"
+- configuração adequada para o Replit
+- tratamento inicial de erros
+- configuração de CORS e variáveis de ambiente
+
+Critérios de aceitação
+
+- O projeto inicia no Replit sem erros.
+- O frontend abre.
+- O backend responde ao health check.
+- O build de produção é concluído.
+- Nenhum secret está no código.
+- O projeto possui scripts claros para desenvolvimento e produção.
+
+Comandos Replit
+
+npm install
+npm run dev
+
+Em outro terminal ou através do Webview:
+
+curl http://localhost:5000/health
+
+Validar build:
+
+npm run build
+npm run start
+
+Se os scripts ainda não existirem, criá-los no "package.json" antes de avançar.
+
+---
+
+6. FASE 2 — BANCO DE DADOS E ORM
+
+Objetivo
+
+Criar o modelo relacional profissional e preparar migrations, seed e conexão PostgreSQL.
+
+Entregáveis
+
+Criar as entidades:
+
+- companies
+- users
+- profiles
+- categories
+- products
+- customers
+- stock_movements
+- sales
+- sale_items
+- returns
+- return_items
+- settings
+- audit_logs
+
+Utilizar:
+
+- primary keys
+- foreign keys
+- unique constraints
+- indexes
+- timestamps
+- "created_at"
+- "updated_at"
+- estados quando necessário
+- associação de todas as entidades relevantes à empresa
+
+Critérios de aceitação
+
+- A aplicação conecta ao PostgreSQL através de variável de ambiente.
+- As migrations são executáveis.
+- O schema possui relações corretas.
+- SKU é único dentro da empresa.
+- Código de barras é único dentro da empresa quando preenchido.
+- Vendas, itens, stock e movimentos possuem relações consistentes.
+- O sistema funciona sem depender de seed data.
+- O seed é claramente identificado como demonstrativo e pode ser removido.
+
+Comandos Replit
+
+npm install prisma @prisma/client
+npx prisma init
+npx prisma validate
+npx prisma format
+npx prisma migrate dev --name init
+npx prisma generate
+npx prisma db seed
+npx prisma studio
+
+Validar o estado:
+
+npx prisma migrate status
+
+---
+
+7. FASE 3 — AUTENTICAÇÃO, SESSÕES E AUTORIZAÇÃO
+
+Objetivo
+
+Implementar autenticação real e proteção das rotas.
+
+Entregáveis
+
+- página de login
+- logout
+- sessão persistente
+- hash seguro de passwords
+- proteção de páginas privadas
+- middleware de autenticação
+- middleware de autorização
+- validação de campos
+- mensagens de erro claras
+- redirecionamento após login
+- recuperação de password, se for implementada com segurança
+- distinção entre ADMIN e FUNCIONÁRIO
+
+Critérios de aceitação
+
+- Utilizadores não autenticados não acessam páginas privadas.
+- Passwords nunca são armazenadas em texto simples.
+- Sessões são invalidadas no logout.
+- Rotas administrativas rejeitam funcionários sem permissão.
+- Erros de login não expõem informações sensíveis.
+- O backend valida a identidade e a empresa em cada operação protegida.
+
+Comandos Replit
+
+npm run lint
+npm run test -- auth
+
+Testar manualmente:
+
+curl -i -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password"}'
+
+Não utilizar credenciais reais no repositório.
+
+---
+
+8. FASE 4 — EMPRESAS, PERFIS E CONFIGURAÇÃO INICIAL
+
+Objetivo
+
+Criar o fluxo de primeiro acesso e o isolamento multiempresa.
+
+Entregáveis
+
+Permitir configurar:
+
+- nome da empresa
+- telefone
+- email
+- endereço
+- moeda
+- logotipo opcional
+- nome do administrador
+
+Criar:
+
+- empresa
+- perfil do administrador
+- configurações padrão
+- moeda padrão AOA — Kwanza
+- estrutura preparada para outras moedas
+
+Critérios de aceitação
+
+- Uma empresa nunca visualiza dados de outra.
+- Toda query protegida filtra pela empresa autenticada.
+- O primeiro acesso conduz à configuração inicial.
+- A moeda padrão é AOA.
+- O backend rejeita tentativas de acessar IDs de outra empresa.
+- O isolamento não depende apenas do frontend.
+
+Comandos Replit
+
+npm run test -- tenant
+npm run test -- permissions
+
+Executar testes de isolamento com pelo menos duas empresas e dois utilizadores.
+
+---
+
+9. FASE 5 — CATEGORIAS
+
+Objetivo
+
+Implementar o CRUD completo de categorias.
+
+Entregáveis
+
+- criar categoria
+- editar categoria
+- desativar categoria
+- listar categorias
+- pesquisar categorias
+- validação de nome
+- associação à empresa
+
+Critérios de aceitação
+
+- Categorias pertencem a uma única empresa.
+- Não existem conflitos de nomes dentro da mesma empresa, conforme regra definida.
+- Categorias de outra empresa não aparecem.
+- Desativar uma categoria não quebra produtos históricos.
+- Operações administrativas são protegidas.
+
+Comandos Replit
+
+npm run test -- categories
+
+---
+
+10. FASE 6 — PRODUTOS
+
+Objetivo
+
+Implementar o módulo completo de produtos.
+
+Campos
+
+- ID
+- nome
+- SKU
+- código de barras
+- categoria
+- descrição
+- preço de compra
+- preço de venda
+- quantidade atual
+- stock mínimo
+- unidade
+- imagem
+- estado ativo/inativo
+- empresa
+- data de criação
+- data de atualização
+
+Funcionalidades
+
+- criar
+- visualizar
+- editar
+- desativar
+- pesquisar
+- filtrar
+- ordenar
+- paginar
+
+Pesquisar por:
+
+- nome
+- SKU
+- código de barras
+
+Validar:
+
+- preços não negativos
+- stock não negativo
+- campos obrigatórios
+- SKU único dentro da empresa
+- código de barras único quando preenchido
+
+Critérios de aceitação
+
+- Produtos são persistidos no PostgreSQL.
+- O frontend mostra loading, erros e estado vazio.
+- A pesquisa funciona por nome, SKU e código de barras.
+- A paginação funciona.
+- Produtos desativados não aparecem em operações de venda.
+- O backend repete todas as validações críticas.
+
+Comandos Replit
+
+npm run test -- products
+npm run lint
+
+---
+
+11. FASE 7 — STOCK E MOVIMENTOS
+
+Objetivo
+
+Implementar entradas, saídas, ajustes, histórico e proteção contra stock negativo.
+
+Entregáveis
+
+Entrada
+
+Registar:
+
+- produto
+- quantidade
+- motivo
+- utilizador
+- data
+- referência opcional
+
+Aumentar o stock automaticamente.
+
+Saída
+
+Permitir motivos:
+
+- venda
+- perda
+- dano
+- oferta
+- consumo interno
+- outro
+
+Diminuir o stock automaticamente.
+
+Ajuste
+
+Permitir correção manual autorizada, sempre com motivo.
+
+Histórico
+
+Cada movimento deve guardar:
+
+- produto
+- empresa
+- quantidade
+- tipo
+- motivo
+- stock anterior
+- stock posterior
+- utilizador responsável
+- data/hora
+- referência da operação
+
+Tipos:
+
+- ENTRADA
+- SAIDA
+- AJUSTE
+- DEVOLUCAO
+
+Critérios de aceitação
+
+- Todas as alterações de stock geram movimentos.
+- O stock anterior e posterior são armazenados.
+- O backend impede stock negativo.
+- A operação de stock é transacional.
+- O histórico não pode ser apagado por operações comuns.
+- Apenas utilizadores autorizados podem ajustar stock.
+- A mensagem de stock insuficiente informa a quantidade disponível.
+
+Comandos Replit
+
+npm run test -- stock
+npm run test -- stock-negative
+npx prisma studio
+
+Teste obrigatório:
+
+Stock inicial: 3
+Tentativa de saída: 5
+Resultado esperado: operação rejeitada, stock permanece 3 e nenhum movimento inválido é criado.
+
+---
+
+12. FASE 8 — CLIENTES
+
+Objetivo
+
+Implementar o módulo de clientes e histórico de compras.
+
+Campos
+
+- nome
+- telefone
+- email
+- endereço
+- observações
+- empresa
+- data de criação
+
+Entregáveis
+
+- criar cliente
+- editar cliente
+- visualizar cliente
+- pesquisar cliente
+- paginar clientes
+- visualizar histórico de compras
+- permitir venda sem cliente associado
+
+Critérios de aceitação
+
+- Clientes são isolados por empresa.
+- O histórico mostra apenas vendas do cliente correto.
+- Uma venda pode ser criada sem cliente.
+- Validações de email e campos obrigatórios funcionam.
+- O módulo possui estados de loading, erro e vazio.
+
+Comandos Replit
+
+npm run test -- customers
+
+---
+
+13. FASE 9 — VENDAS, CARRINHO E PAGAMENTOS
+
+Objetivo
+
+Implementar o núcleo comercial do sistema como operação transacional.
+
+Fluxo obrigatório
+
+1. selecionar produto
+2. adicionar ao carrinho
+3. definir quantidade
+4. alterar quantidade
+5. remover produto
+6. aplicar desconto quando autorizado
+7. calcular subtotal
+8. calcular desconto
+9. calcular total
+10. selecionar método de pagamento
+11. confirmar venda
+12. criar venda
+13. criar itens vendidos
+14. atualizar stock
+15. criar movimentos de stock
+16. mostrar confirmação
+
+Métodos de pagamento
+
+- Dinheiro
+- Transferência bancária
+- Multicaixa
+- Outro
+
+Preparar arquitetura para:
+
+- cartão
+- pagamentos digitais
+- outros métodos
+
+Número da venda
+
+Criar identificador único, legível e pesquisável, por exemplo:
+
+EM-2026-000001
+
+Integridade transacional
+
+Ao confirmar uma venda:
+
+1. validar utilizador
+2. validar empresa
+3. validar produtos
+4. verificar stock
+5. calcular valores no backend
+6. criar venda
+7. criar itens
+8. atualizar stock
+9. criar movimentos
+10. concluir transação
+
+Se qualquer etapa falhar, reverter tudo.
+
+Critérios de aceitação
+
+- O total é recalculado no backend.
+- O frontend não consegue manipular o preço final de forma indevida.
+- Não é possível vender produto inativo.
+- Não é possível vender quantidade inválida.
+- Não é possível vender acima do stock disponível.
+- A venda, os itens, a atualização de stock e os movimentos são atómicos.
+- Não existe venda sem atualização de stock.
+- Não existe atualização de stock de venda sem movimento correspondente.
+- Cliques repetidos não criam vendas duplicadas.
+- A venda pode ser associada a cliente ou ficar sem cliente.
+- O desconto respeita permissões.
+
+Comandos Replit
+
+npm run test -- sales
+npm run test -- cart
+npm run test -- transaction
+npm run test -- duplicate-submit
+
+Teste obrigatório:
+
+Criar venda com dois produtos, confirmar, verificar:
+- venda criada
+- itens criados
+- total correto
+- stock reduzido
+- movimentos criados
+- número único
+
+---
+
+14. FASE 10 — DEVOLUÇÕES
+
+Objetivo
+
+Implementar devoluções coerentes com a venda original.
+
+Entregáveis
+
+Ao devolver um produto:
+
+- identificar venda original
+- identificar produto
+- validar quantidade devolvida
+- registar motivo
+- registar utilizador
+- registar data
+- atualizar stock conforme regra
+- criar movimento DEVOLUCAO
+- impedir devoluções acima da quantidade vendida ou já devolvida
+
+Critérios de aceitação
+
+- Não é possível devolver produto de venda inexistente.
+- Não é possível devolver quantidade superior à permitida.
+- A devolução fica associada à venda original.
+- O stock é atualizado conforme a regra definida.
+- O movimento de devolução é criado.
+- A operação é auditada.
+
+Comandos Replit
+
+npm run test -- returns
+
+---
+
+15. FASE 11 — SCANNER DE CÓDIGO DE BARRAS E QR
+
+Objetivo
+
+Permitir leitura por câmera sem tornar o sistema dependente dela.
+
+Entregáveis
+
+Ao escanear:
+
+1. identificar produto
+2. localizar produto no banco
+3. mostrar produto
+4. adicionar ao carrinho ou abrir detalhes
+
+Se a câmera não funcionar, mostrar:
+
+Pesquisar por código ou nome
+
+Critérios de aceitação
+
+- O scanner funciona em dispositivos compatíveis.
+- O sistema solicita permissões de câmera corretamente.
+- Erros de câmera são tratados.
+- Existe alternativa manual.
+- O produto encontrado pertence à empresa autenticada.
+- O scanner não bloqueia o fluxo de venda.
+
+Comandos Replit
+
+npm run test -- scanner
+
+Testar manualmente em smartphone Android e navegador desktop.
+
+---
+
+16. FASE 12 — DASHBOARD
+
+Objetivo
+
+Criar dashboard baseado exclusivamente em dados reais do banco.
+
+Indicadores
+
+- vendas de hoje
+- vendas do mês
+- número de vendas
+- quantidade de produtos
+- valor estimado do stock
+- produtos com stock baixo
+- produtos esgotados
+- produtos mais vendidos
+- vendas recentes
+- atividade recente
+
+Adicionar gráficos apenas quando forem úteis.
+
+Critérios de aceitação
+
+- Nenhum número é hardcoded.
+- Os dados respeitam a empresa autenticada.
+- Os filtros temporais funcionam.
+- O dashboard possui loading, erro e estado vazio.
+- Os rankings são baseados em vendas reais.
+- O valor do stock possui regra documentada.
+
+Comandos Replit
+
+npm run test -- dashboard
+
+---
+
+17. FASE 13 — RELATÓRIOS E EXPORTAÇÃO
+
+Objetivo
+
+Criar relatórios operacionais e financeiros.
+
+Relatórios
+
+Vendas
+
+- dia
+- semana
+- mês
+- período personalizado
+
+Produtos
+
+- mais vendidos
+- menos vendidos
+
+Stock
+
+- stock atual
+- stock baixo
+- esgotados
+
+Movimentos
+
+- entradas
+- saídas
+- ajustes
+- devoluções
+
+Financeiro operacional
+
+- vendas brutas
+- descontos
+- vendas líquidas
+
+Filtros
+
+- período
+- produto
+- categoria
+- funcionário
+- método de pagamento
+
+Exportação
+
+Implementar, quando estável:
+
+- CSV
+- PDF
+
+Critérios de aceitação
+
+- Relatórios respeitam empresa e permissões.
+- Filtros são aplicados no backend.
+- Grandes volumes não são carregados de uma vez sem necessidade.
+- Totais são consistentes com as vendas.
+- Exportações não expõem dados de outra empresa.
+- Erros de geração são tratados.
+
+Comandos Replit
+
+npm run test -- reports
+
+---
+
+18. FASE 14 — ALERTAS, PESQUISA E EXPERIÊNCIA DE UTILIZAÇÃO
+
+Entregáveis
+
+Criar alertas para:
+
+- stock baixo
+- produto esgotado
+- stock insuficiente
+- venda realizada
+- produto criado
+- erro de operação
+
+Criar pesquisa global para:
+
+- produtos
+- clientes
+- vendas
+- SKU
+- código de barras
+
+Criar estados:
+
+- loading
+- erro
+- vazio
+- sucesso
+- confirmação
+- prevenção de duplo clique
+
+Critérios de aceitação
+
+- Mensagens são claras e úteis.
+- A pesquisa é rápida e paginada quando necessário.
+- Alertas não escondem informações importantes.
+- Operações duplicadas são prevenidas.
+- Páginas sem dados mostram instruções e ações úteis.
+
+---
+
+19. FASE 15 — FUNCIONÁRIOS, PERMISSÕES E AUDITORIA
+
+ADMIN pode
+
+- visualizar dashboard
+- criar, editar e desativar produtos
+- criar categorias
+- gerir stock
+- visualizar e criar vendas
+- cancelar vendas conforme regras
+- visualizar relatórios
+- gerir funcionários
+- gerir clientes
+- alterar configurações
+
+FUNCIONÁRIO pode, conforme permissões
+
+- consultar produtos
+- consultar stock
+- realizar vendas
+- cadastrar clientes
+- consultar as próprias vendas
+- executar operações autorizadas
+
+Auditoria
+
+Criar "audit_logs" para:
+
+- login
+- criação de produto
+- alteração de produto
+- alteração de stock
+- venda
+- cancelamento
+- devolução
+- criação de funcionário
+- alteração de configurações
+
+Guardar:
+
+- utilizador
+- ação
+- entidade
+- ID da entidade
+- data/hora
+- informações relevantes
+
+Critérios de aceitação
+
+- Cada endpoint verifica autenticação, função, empresa e permissão.
+- Funcionários não executam operações administrativas sem autorização.
+- Operações críticas geram logs.
+- Logs não podem ser alterados por utilizadores comuns.
+- A auditoria permite identificar quem fez cada operação.
+
+Comandos Replit
+
+npm run test -- permissions
+npm run test -- audit
+
+---
+
+20. FASE 16 — DESIGN RESPONSIVO E MOBILE-FIRST
+
+Objetivo
+
+Criar uma interface comercial profissional, simples e adequada a smartphones Android.
+
+Identidade visual
+
+Utilizar principalmente:
+
+- azul
+- branco
+- preto e cinza para textos e elementos neutros
+
+Prioridade:
+
+USABILIDADE > EFEITOS VISUAIS
+
+Requisitos
+
+- menu lateral no desktop
+- navegação adaptada no mobile
+- botões grandes
+- formulários fáceis de preencher
+- tabelas adaptadas
+- cards responsivos
+- scanner acessível
+- carrinho confortável
+- tipografia legível
+- ícones consistentes
+- espaçamento adequado
+- branding EMIRAS discreto e profissional
+
+Testar:
+
+- 360px
+- 390px
+- 414px
+- tablet
+- desktop
+
+Critérios de aceitação
+
+Nenhuma página pode apresentar:
+
+- conteúdo cortado
+- scroll horizontal desnecessário
+- botões fora da tela
+- texto ilegível
+- tabelas impossíveis de utilizar
+- formulários desconfortáveis no mobile
+
+Comandos Replit
+
+npm run build
+npm run lint
+
+Testar manualmente através do DevTools e de um smartphone Android real.
+
+---
+
+21. FASE 17 — CONFIGURAÇÕES DA EMPRESA
+
+Entregáveis
+
+Permitir configurar:
+
+- nome da empresa
+- telefone
+- email
+- endereço
+- logotipo
+- moeda
+- stock mínimo padrão
+- preferências de venda
+
+Critérios de aceitação
+
+- Apenas utilizadores autorizados alteram configurações.
+- Alterações são persistidas.
+- Alterações relevantes geram auditoria.
+- Configurações de uma empresa não afetam outra.
+- A interface mostra feedback de sucesso ou erro.
+
+---
+
+22. FASE 18 — SEGURANÇA, PERFORMANCE E QUALIDADE
+
+Segurança
+
+Implementar:
+
+- autenticação real
+- autorização por função
+- proteção das APIs
+- validação de dados
+- sanitização quando necessário
+- queries seguras
+- isolamento entre empresas
+- proteção de rotas
+- secrets em environment variables
+- passwords com hash
+- validação no backend
+- proteção contra duplicação de operações
+- rate limiting quando apropriado
+- logs técnicos sem dados sensíveis
+
+Performance
+
+Evitar:
+
+- queries desnecessárias
+- chamadas repetidas
+- carregamento excessivo
+- componentes gigantes
+- código duplicado
+
+Criar índices apropriados.
+
+Critérios de aceitação
+
+- Não existem secrets no repositório.
+- Não existem endpoints críticos sem autenticação.
+- Não existem queries sem filtro de empresa quando necessário.
+- Operações críticas são transacionais.
+- Listagens utilizam paginação.
+- O build não apresenta erros.
+- O lint não apresenta erros bloqueantes.
+
+Comandos Replit
+
+npm run lint
+npm run test
+npm audit
+npm run build
+
+Corrigir vulnerabilidades relevantes antes da publicação.
+
+---
+
+23. FASE 19 — TESTES AUTOMATIZADOS E MANUAIS
+
+Testar obrigatoriamente
+
+- login
+- logout
+- sessão persistente
+- criação de empresa
+- isolamento entre empresas
+- criação de produto
+- edição de produto
+- desativação de produto
+- categorias
+- entrada de stock
+- saída de stock
+- ajuste de stock
+- stock insuficiente
+- venda
+- desconto
+- métodos de pagamento
+- prevenção de venda duplicada
+- devolução
+- permissões
+- relatórios
+- dashboard
+- scanner
+- mobile
+- auditoria
+- exportação
+
+Critérios de aceitação
+
+- Testes críticos passam.
+- Casos de erro são testados.
+- O projeto não é considerado concluído apenas porque as páginas abrem.
+- Cada módulo possui evidência de validação.
+- Bugs encontrados são corrigidos antes da fase seguinte ou registados explicitamente.
+
+Comandos Replit
+
+npm run test
+npm run test -- --coverage
+npm run lint
+npm run build
+
+Criar, se necessário:
+
+mkdir -p docs/test-results
+
+Registar resultados em:
+
+docs/test-results/
+
+---
+
+24. FASE 20 — DADOS DEMONSTRATIVOS
+
+Durante o desenvolvimento, pode ser utilizado seed data.
+
+Regras:
+
+- identificar claramente os dados demo
+- não misturar dados demo com dados reais
+- permitir limpar os dados demo
+- não depender dos dados demo para a aplicação funcionar
+- não apresentar dados demo como dados reais
+
+Critérios de aceitação
+
+- A aplicação inicia sem seed.
+- O seed é opcional.
+- Existe documentação para inserir e remover dados demo.
+- Dados demo não atravessam o isolamento entre empresas.
+
+Comandos Replit
+
+npx prisma db seed
+
+Criar comando de limpeza apenas se for seguro e claramente documentado:
+
+npm run db:reset
+
+Nunca executar reset em produção sem confirmação explícita.
+
+---
+
+25. FASE 21 — PREPARAÇÃO PARA FUNCIONALIDADES FUTURAS
+
+Preparar a arquitetura, mas não comprometer a estabilidade do núcleo, para:
+
+- fornecedores
+- compras
+- despesas
+- lucro
+- múltiplos armazéns
+- múltiplos caixas
+- impressora térmica
+- faturas
+- recibos
+- integração WhatsApp
+- CRM
+- pagamentos online
+- relatórios avançados
+- aplicações mobile
+- notificações
+- IA
+
+Não implementar funcionalidades futuras como falsas. Criar apenas interfaces, contratos ou documentação quando isso não prejudicar o MVP.
+
+---
+
+26. FASE 22 — BUILD, PUBLICAÇÃO E OPERAÇÃO NO REPLIT
+
+Entregáveis
+
+- build de produção
+- configuração de start
+- variáveis de ambiente documentadas
+- migrations de produção
+- seed opcional
+- rotas verificadas
+- autenticação verificada
+- banco verificado
+- mobile verificado
+- aplicação publicada
+- URL pública funcional
+
+Critérios de aceitação
+
+- O build de produção termina sem erros.
+- A aplicação inicia com o comando de produção.
+- O PostgreSQL de produção está configurado.
+- As migrations foram aplicadas.
+- As rotas frontend funcionam diretamente após refresh.
+- A autenticação funciona em produção.
+- O isolamento multiempresa funciona em produção.
+- A URL pública abre a aplicação real.
+- Não existem funcionalidades falsas apresentadas como concluídas.
+
+Comandos Replit
+
+npm run build
+npx prisma migrate deploy
+npm run start
+
+Verificar:
+
+curl -I https://URL_PUBLICA
+curl -s https://URL_PUBLICA/health
+
+Configurar no Replit:
+
+- Secrets
+- comando de build
+- comando de start
+- PostgreSQL
+- domínio ou URL pública
+- logs de execução
+
+---
+
+27. CHECKLIST FINAL DE ACEITAÇÃO
+
+Considerar o projeto concluído apenas quando todos os itens seguintes forem verdadeiros:
+
+- frontend real funcionando
+- backend real funcionando
+- PostgreSQL real conectado
+- autenticação real funcionando
+- sessões protegidas
+- autorização por função funcionando
+- isolamento entre empresas validado
+- produtos persistidos
+- categorias persistidas
+- stock persistido
+- movimentos de stock auditáveis
+- stock negativo bloqueado no backend
+- vendas transacionais
+- carrinho funcional
+- descontos validados
+- pagamentos registados
+- clientes persistidos
+- devoluções coerentes
+- dashboard baseado em dados reais
+- relatórios funcionais
+- alertas funcionais
+- pesquisa funcional
+- auditoria funcional
+- loading states implementados
+- estados vazios implementados
+- paginação implementada
+- mobile-first validado
+- scanner com alternativa manual
+- testes críticos aprovados
+- build de produção aprovado
+- secrets protegidos
+- aplicação publicada no Replit
+- URL pública funcional
+
+---
+
+28. ORDEM OBRIGATÓRIA DE EXECUÇÃO
+
+Executar nesta ordem:
+
+1. analisar arquitetura
+2. criar documentação técnica
+3. criar estrutura do projeto
+4. configurar Replit
+5. configurar PostgreSQL e ORM
+6. criar migrations
+7. implementar autenticação
+8. implementar empresas e isolamento multiempresa
+9. implementar categorias
+10. implementar produtos
+11. implementar stock e movimentos
+12. implementar clientes
+13. implementar vendas e carrinho
+14. implementar devoluções
+15. implementar scanner
+16. implementar dashboard
+17. implementar relatórios
+18. implementar alertas e pesquisa
+19. implementar funcionários e auditoria
+20. finalizar design mobile-first
+21. executar testes
+22. corrigir erros
+23. executar build de produção
+24. publicar no Replit
+25. validar a URL pública
+
+Após cada fase:
+
+- verificar arquivos
+- verificar banco
+- verificar APIs
+- executar testes
+- verificar erros
+- corrigir problemas
+- documentar o resultado
+
+Não avançar para outro sistema EMIRAS até este estar funcional.
+
+O objetivo final é entregar o EMIRAS STOCK + VENDAS INTELIGENTE como um produto web comercial funcional, profissional, seguro, responsivo, auditável e acessível online.

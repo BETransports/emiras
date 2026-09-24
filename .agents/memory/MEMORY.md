@@ -1,0 +1,2 @@
+- [TypeScript DOM iterables](typescript-dom-iterable.md) — generated browser clients need `dom.iterable` for `Headers.entries()`.
+- [Clerk App Storage uploads](clerk-app-storage.md) — storage templates need Clerk auth adaptation in this project.

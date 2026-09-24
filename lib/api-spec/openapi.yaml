@@ -1,0 +1,647 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: EMIRAS Stock + Vendas Inteligente API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: dashboard
+  - name: products
+  - name: categories
+  - name: stock
+  - name: customers
+  - name: sales
+  - name: activity
+  - name: Storage
+    description: Object storage upload and serving endpoints.
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard KPIs
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [activity]
+      summary: List recent activity
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List and search products
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/CategoryId"
+        - $ref: "#/components/parameters/LowStock"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Product page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPage"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /products/{id}:
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /stock/movements:
+    get:
+      operationId: listStockMovements
+      tags: [stock]
+      summary: List stock movements
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Stock movements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockMovement"
+    post:
+      operationId: createStockMovement
+      tags: [stock]
+      summary: Register a stock movement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockMovementInput"
+      responses:
+        "201":
+          description: Created movement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockMovement"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List customers
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Customer page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerPage"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Created customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+  /sales:
+    get:
+      operationId: listSales
+      tags: [sales]
+      summary: List sales
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Sales page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalePage"
+    post:
+      operationId: createSale
+      tags: [sales]
+      summary: Create a sale atomically
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "201":
+          description: Created sale
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+    CategoryId:
+      name: categoryId
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    LowStock:
+      name: lowStock
+      in: query
+      schema:
+        type: boolean
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        color: { type: string }
+        productCount: { type: integer }
+        active: { type: boolean }
+      required: [id, name, color, productCount, active]
+    CategoryInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        color: { type: string, minLength: 1 }
+      required: [name]
+    CategoryUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        color: { type: string, minLength: 1 }
+        active: { type: boolean }
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        sku: { type: string }
+        barcode: { type: ["string", "null"] }
+        categoryId: { type: ["integer", "null"] }
+        categoryName: { type: ["string", "null"] }
+        price: { type: number }
+        costPrice: { type: number }
+        stock: { type: integer }
+        minStock: { type: integer }
+        unit: { type: string }
+        active: { type: boolean }
+        imageUrl: { type: ["string", "null"] }
+        updatedAt: { type: string, format: date-time }
+      required: [id, name, sku, barcode, categoryId, categoryName, price, costPrice, stock, minStock, unit, active, imageUrl, updatedAt]
+    ProductInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        sku: { type: string, minLength: 1 }
+        barcode: { type: ["string", "null"] }
+        categoryId: { type: ["integer", "null"] }
+        price: { type: number, minimum: 0 }
+        costPrice: { type: number, minimum: 0 }
+        stock: { type: integer, minimum: 0 }
+        minStock: { type: integer, minimum: 0 }
+        unit: { type: string }
+        imageUrl: { type: ["string", "null"] }
+      required: [name, sku, price, costPrice, stock, minStock]
+    ProductUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        barcode: { type: ["string", "null"] }
+        categoryId: { type: ["integer", "null"] }
+        price: { type: number, minimum: 0 }
+        costPrice: { type: number, minimum: 0 }
+        minStock: { type: integer, minimum: 0 }
+        unit: { type: string }
+        active: { type: boolean }
+        imageUrl: { type: ["string", "null"] }
+    ProductPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Product" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+      required: [items, total, page, pageSize]
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1 }
+        contentType: { type: string, minLength: 1 }
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+    StockMovement:
+      type: object
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        productName: { type: string }
+        type: { type: string, enum: [ENTRADA, SAIDA, AJUSTE, DEVOLUCAO] }
+        quantity: { type: integer }
+        reason: { type: string }
+        previousStock: { type: integer }
+        resultingStock: { type: integer }
+        createdAt: { type: string, format: date-time }
+      required: [id, productId, productName, type, quantity, reason, previousStock, resultingStock, createdAt]
+    StockMovementInput:
+      type: object
+      properties:
+        productId: { type: integer, minimum: 1 }
+        type: { type: string, enum: [ENTRADA, SAIDA, AJUSTE, DEVOLUCAO] }
+        quantity: { type: integer, minimum: 1 }
+        reason: { type: string, minLength: 1 }
+      required: [productId, type, quantity, reason]
+    Customer:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        phone: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        address: { type: ["string", "null"] }
+        purchaseCount: { type: integer }
+        totalSpent: { type: number }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, phone, email, address, purchaseCount, totalSpent, createdAt]
+    CustomerInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        phone: { type: ["string", "null"] }
+        email: { type: ["string", "null"], format: email }
+        address: { type: ["string", "null"] }
+      required: [name]
+    CustomerPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Customer" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+      required: [items, total, page, pageSize]
+    SaleItemInput:
+      type: object
+      properties:
+        productId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: 1 }
+      required: [productId, quantity]
+    SaleItem:
+      type: object
+      properties:
+        productId: { type: integer }
+        productName: { type: string }
+        quantity: { type: integer }
+        unitPrice: { type: number }
+        total: { type: number }
+      required: [productId, productName, quantity, unitPrice, total]
+    SaleInput:
+      type: object
+      properties:
+        customerId: { type: ["integer", "null"] }
+        discount: { type: number, minimum: 0 }
+        paymentMethod: { type: string, enum: [DINHEIRO, TRANSFERENCIA, MULTICAIXA, OUTRO] }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/SaleItemInput" }
+      required: [discount, paymentMethod, items]
+    Sale:
+      type: object
+      properties:
+        id: { type: integer }
+        number: { type: string }
+        customerId: { type: ["integer", "null"] }
+        customerName: { type: ["string", "null"] }
+        subtotal: { type: number }
+        discount: { type: number }
+        total: { type: number }
+        paymentMethod: { type: string }
+        createdAt: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/SaleItem" }
+      required: [id, number, customerId, customerName, subtotal, discount, total, paymentMethod, createdAt, items]
+    SalePage:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Sale" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+      required: [items, total, page, pageSize]
+    ActivityItem:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, type, title, detail, createdAt]
+    DashboardSummary:
+      type: object
+      properties:
+        todaySales: { type: number }
+        monthSales: { type: number }
+        todayOrders: { type: integer }
+        productCount: { type: integer }
+        stockValue: { type: number }
+        lowStockCount: { type: integer }
+        outOfStockCount: { type: integer }
+        topProducts:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              quantity: { type: integer }
+              value: { type: number }
+            required: [name, quantity, value]
+        salesByDay:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              value: { type: number }
+            required: [label, value]
+      required: [todaySales, monthSales, todayOrders, productCount, stockValue, lowStockCount, outOfStockCount, topProducts, salesByDay]

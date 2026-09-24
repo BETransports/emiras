@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "EMIRAS Stock + Vendas"
+description = "Aplicação comercial para pequenas e médias empresas em Angola controlarem produtos, stock, vendas, clientes e atividade operacional com dados reais."
+version = "1.0.0"
+id = "artifacts/emiras-stock"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19792
+
+[services.development]
+run = "pnpm --filter @workspace/emiras-stock run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/emiras-stock", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/emiras-stock/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19792"
+BASE_PATH = "/"
