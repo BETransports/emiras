@@ -13,6 +13,15 @@ import {
 
 const app: Express = express();
 
+// Rota de boas-vindas na raiz (/)
+app.get("/", (req, res) => {
+  res.json({
+    message: "🚀 API EMIRAS Stock + Vendas está online e operacional!",
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use(
   pinoHttp({
     logger,
