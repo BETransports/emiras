@@ -8,19 +8,22 @@ import customersRouter from "./customers";
 import salesRouter from "./sales";
 import activityRouter from "./activity";
 import adminRouter from "./admin";
-import { requireAuth, requireActiveCompany } from "../middlewares/auth";
 import storageRouter from "./storage";
+import { requireAuth, requireActiveCompany } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
+// 1. Rotas públicas / utilitárias
 router.use(healthRouter);
 router.use(storageRouter);
+
+// 2. Middleware de Autenticação Obrigatória para as rotas abaixo
 router.use(requireAuth);
 
-// Rotas do admin: não exigem empresa activa (o próprio admin aprova empresas)
-router.use(adminRouter);
+// 3. Rotas de Admin (não exigem empresa ativa, mas estão sob /api/admin)
+router.use("/api/admin", adminRouter);
 
-// Rotas normais: só liberadas se a empresa estiver activa
+// 4. Rotas do Cliente/Empresa (exigem empresa ativa)
 router.use(requireActiveCompany);
 router.use(dashboardRouter);
 router.use(productsRouter);
