@@ -17,4 +17,14 @@
 //   export type InsertPost = z.infer<typeof insertPostSchema>;
 //   export type Post = typeof postsTable.$inferSelect;
 
-export * from "./emiras";
+import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+
+export const paymentLogsTable = pgTable("payment_logs", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull(),
+  registeredByUserId: integer("registered_by_user_id").notNull(),
+  contractType: text("contract_type").notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
