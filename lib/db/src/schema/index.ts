@@ -89,3 +89,23 @@ export const paymentLogsTable = pgTable("payment_logs", {
   periodEnd: timestamp("period_end").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Categorias
+export const categoriesTable = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Clientes
+export const customersTable = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
