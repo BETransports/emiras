@@ -14,6 +14,10 @@ export const companiesTable = pgTable("companies", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   currency: text("currency").notNull().default("AOA"),
+  status: text("status").notNull().default("pending"),
+  contractType: text("contract_type"),
+  contractStartDate: timestamp("contract_start_date", { withTimezone: true }),
+  contractEndDate: timestamp("contract_end_date", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -23,6 +27,7 @@ export const usersTable = pgTable("users", {
   companyId: integer("company_id").notNull().references(() => companiesTable.id),
   name: text("name").notNull(),
   role: text("role").notNull().default("ADMIN"),
+  isPlatformAdmin: integer("is_platform_admin").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -100,6 +105,16 @@ export const salesTable = pgTable("sales", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const paymentLogsTable = pgTable("payment_logs", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").notNull().references(() => companiesTable.id),
+  registeredByUserId: integer("registered_by_user_id").notNull().references(() => usersTable.id),
+  contractType: text("contract_type").notNull(),
+  periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+  periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const saleItemsTable = pgTable("sale_items", {
   id: serial("id").primaryKey(),
   saleId: integer("sale_id").notNull().references(() => salesTable.id),
@@ -140,3 +155,5 @@ export type Sale = typeof salesTable.$inferSelect;
 export type SaleItem = typeof saleItemsTable.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type Company = typeof companiesTable.$inferSelect;
+export type PaymentLog = typeof paymentLogsTable.$inferSelect;
