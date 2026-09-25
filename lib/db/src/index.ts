@@ -13,5 +13,5 @@ if (!process.env.DATABASE_URL) {
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 export const db = drizzle(pool, { schema });
 
-// Reexporta todas as tabelas (paymentLogsTable, companiesTable, usersTable, etc.) do schema.ts
+// Exporta todas as tabelas (usersTable, companiesTable, salesTable, stockMovementsTable, etc.)
 export * from "./schema";

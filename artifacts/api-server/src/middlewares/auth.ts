@@ -2,8 +2,20 @@ import { Request, Response, NextFunction } from "express";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
+  companyId?: number;
   isPlatformAdmin?: boolean;
 }
+
+// Função utilitária exigida no activity.ts
+export const getCompanyId = (req: Request): number | null => {
+  const authReq = req as AuthenticatedRequest;
+  if (authReq.companyId) return authReq.companyId;
+  
+  const headerId = req.headers["x-company-id"];
+  if (headerId) return Number(headerId);
+  
+  return null;
+};
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!(req as AuthenticatedRequest).userId) {
@@ -13,7 +25,6 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   next();
 };
 
-// 1. Exportação necessária para o admin.ts
 export const requirePlatformAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!(req as AuthenticatedRequest).isPlatformAdmin) {
     res.status(403).json({ error: "Acesso restrito ao administrador" });
@@ -22,7 +33,6 @@ export const requirePlatformAdmin = (req: Request, res: Response, next: NextFunc
   next();
 };
 
-// 2. Exportação necessária para o index.ts
 export const requireActiveCompany = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
