@@ -39,7 +39,14 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(clerkMiddleware());
+app.use(
+  clerkMiddleware({
+    authorizedParties: [
+      "https://emiras-stock.vercel.app",
+      "http://localhost:5173",
+    ],
+  }),
+);
 
 app.use("/api", router);
 
