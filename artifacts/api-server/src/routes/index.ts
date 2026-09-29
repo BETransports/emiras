@@ -4,6 +4,7 @@ import dashboardRouter from "./dashboard";
 import productsRouter from "./products";
 import categoriesRouter from "./categories";
 import stockRouter from "./stock";
+import meRouter from "./me";
 import customersRouter from "./customers";
 import salesRouter from "./sales";
 import activityRouter from "./activity";
@@ -25,6 +26,7 @@ router.use("/api/admin", adminRouter);
 
 // 4. Rotas do Cliente/Empresa (exigem empresa ativa)
 router.use(requireActiveCompany);
+router.use(meRouter);
 router.use(dashboardRouter);
 router.use(productsRouter);
 router.use(categoriesRouter);
