@@ -1,7 +1,7 @@
-import { useState, type FormEvent, type ReactNode, type InputHTMLAttributes, type SelectHTMLAttributes } from 'react';
+import { useState, useEffect, type FormEvent, type ReactNode, type InputHTMLAttributes, type SelectHTMLAttributes } from 'react';
 import { ClerkProvider, SignIn, SignUp, UserProfile, useAuth, useClerk, useUser } from '@clerk/react';
 import { shadcn } from '@clerk/themes';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import {
   Activity, ArrowDownLeft, ArrowUpRight, Boxes, CheckCircle2, ChevronRight,
   CircleAlert, ClipboardList, CreditCard, Database, Edit3,
@@ -311,7 +311,19 @@ function Categories() {
 }
 
 function ProfilePage() { return <div className="animate-rise"><PageIntro eyebrow="Conta" title="Meu perfil" detail="Atualize o seu nome, fotografia, email e segurança da conta." /><Card className="overflow-hidden p-2 sm:p-3"><UserProfile routing="path" path={`${basePath}/profile`} appearance={appearance} /></Card></div>; }
-function SettingsPage() { return <div className="animate-rise"><PageIntro eyebrow="Espaço" title="Definições" detail="Preferências da sua operação EMIRAS." /><Card><div className="flex flex-col items-center px-6 py-20 text-center"><span className="grid h-16 w-16 place-items-center rounded-2xl bg-secondary text-primary"><Settings size={27} /></span><h2 className="mt-5 text-xl font-extrabold">Definições da empresa</h2><p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">Estamos a preparar esta área para guardar dados da empresa, documentos e preferências de facturação.</p><span className="mt-5 rounded-full bg-muted px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.14em] text-muted-foreground">Disponível em breve</span></div></Card></div>; }
+function SettingsPage() {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({ queryKey: ['me'], queryFn: () => fetch(`${basePath}/api/me`).then(r => r.json()) });
+  const [name, setName] = useState('');
+  const [currency, setCurrency] = useState('AOA');
+  useEffect(() => { if (data?.company) { setName(data.company.name); setCurrency(data.company.currency); } }, [data]);
+  const save = useMutation({
+    mutationFn: () => fetch(`${basePath}/api/company`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, currency }) }).then(r => r.json()),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+  });
+  if (isLoading) return <SkeletonRows />;
+  return <div className="animate-rise"><PageIntro eyebrow="Espaço" title="Definições" detail="Preferências da sua operação EMIRAS." /><Card className="max-w-xl p-5"><div className="space-y-4"><Field label="Nome da empresa" value={name} onChange={(e) => setName(e.target.value)} data-testid="input-company-name" /><SelectField label="Moeda" value={currency} onChange={(e) => setCurrency(e.target.value)} data-testid="select-company-currency"><option value="AOA">Kwanza (AOA)</option><option value="USD">Dólar (USD)</option><option value="EUR">Euro (EUR)</option></SelectField><div className="rounded-xl bg-muted p-3 text-xs text-muted-foreground"><p><strong>Plano:</strong> {data?.company?.status === 'active' ? 'Activo' : data?.company?.status === 'pending' ? 'Pendente de aprovação' : 'Bloqueado'}</p>{data?.company?.contractType && <p className="mt-1"><strong>Contrato:</strong> {data.company.contractType === 'mensal' ? 'Mensal' : 'Semestral'}</p>}{data?.company?.contractEndDate && <p className="mt-1"><strong>Expira em:</strong> {date(data.company.contractEndDate)}</p>}</div><Button onClick={() => save.mutate()} disabled={save.isPending} testId="button-save-company">{save.isPending ? 'A guardar...' : 'Guardar alterações'}</Button></div></Card></div>;
+}
 
 function SignInPage() { return <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4"><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></div>; }
 function SignUpPage() { return <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4"><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></div>; }
