@@ -9,7 +9,7 @@ import {
   LayoutDashboard, LifeBuoy, LogOut, Menu, Package, Plus, Search,
   Settings, ShoppingCart, SlidersHorizontal, Tags, TrendingUp,
   Upload, UserCircle, Users, X, Zap,
-} from 'lucide-react';
+, ShieldCheck } from 'lucide-react';
 import {
   getGetDashboardSummaryQueryKey, getListCategoriesQueryKey,
   getListCustomersQueryKey, getListProductsQueryKey, getListSalesQueryKey,
@@ -124,6 +124,7 @@ function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { user } = useUser();
   const { signOut } = useClerk();
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: () => fetch(`${basePath}/api/me`).then(r => r.json()) });
   const current = nav.find((item) => location.startsWith(item.href));
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}` || 'EM';
   return <div className="min-h-[100dvh] bg-background">
@@ -132,7 +133,7 @@ function AppShell({ children }: { children: ReactNode }) {
       <div className="mt-10 px-2 text-[10px] font-bold uppercase tracking-[.2em] text-sidebar-foreground/40">Operação</div>
       <nav className="mt-3 space-y-1">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setMobileOpen(false)} className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${location.startsWith(href) ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}`} data-testid={`link-nav-${label.toLowerCase()}`}><Icon size={17} strokeWidth={location.startsWith(href) ? 2.4 : 1.8} /><span>{label}</span>{href === '/stock' && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-accent" />}</Link>)}</nav>
       <div className="mt-9 px-2 text-[10px] font-bold uppercase tracking-[.2em] text-sidebar-foreground/40">Espaço</div>
-      <nav className="mt-3 space-y-1"><Link href="/profile" className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${location.startsWith('/profile') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}`} data-testid="link-nav-perfil"><UserCircle size={17} /> Meu perfil</Link><Link href="/settings" className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${location === '/settings' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}`} data-testid="link-nav-definicoes"><Settings size={17} /> Definições</Link></nav>
+      <nav className="mt-3 space-y-1"><Link href="/profile" className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${location.startsWith('/profile') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}`} data-testid="link-nav-perfil"><UserCircle size={17} /> Meu perfil</Link><Link href="/settings" className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${location === '/settings' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}`} data-testid="link-nav-definicoes"><Settings size={17} /> Definições</Link>{me?.isPlatformAdmin && <Link href="/admin" className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${location === '/admin' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}`} data-testid="link-nav-admin"><ShieldCheck size={17} /> Administração</Link>}</nav>
       <div className="mt-auto rounded-2xl border border-sidebar-border bg-sidebar-accent/60 p-3"><div className="flex items-start gap-2"><LifeBuoy size={16} className="mt-0.5 text-primary" /><div><p className="text-xs font-bold">Precisa de ajuda?</p><p className="mt-1 text-[11px] leading-4 text-sidebar-foreground/55">A equipa EMIRAS está por perto.</p></div></div></div>
       <div className="mt-4 flex items-center gap-3 border-t border-sidebar-border pt-4"><span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-xs font-extrabold text-primary-foreground">{initials}</span><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold">{user?.fullName ?? 'Operador EMIRAS'}</p><p className="truncate text-[11px] text-sidebar-foreground/45">{user?.primaryEmailAddress?.emailAddress ?? 'conta activa'}</p></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} className="rounded-lg p-2 text-sidebar-foreground/45 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" data-testid="button-sign-out"><LogOut size={15} /></button></div>
     </aside>
@@ -325,8 +326,67 @@ function SettingsPage() {
   return <div className="animate-rise"><PageIntro eyebrow="Espaço" title="Definições" detail="Preferências da sua operação EMIRAS." /><Card className="max-w-xl p-5"><div className="space-y-4"><Field label="Nome da empresa" value={name} onChange={(e) => setName(e.target.value)} data-testid="input-company-name" /><SelectField label="Moeda" value={currency} onChange={(e) => setCurrency(e.target.value)} data-testid="select-company-currency"><option value="AOA">Kwanza (AOA)</option><option value="USD">Dólar (USD)</option><option value="EUR">Euro (EUR)</option></SelectField><div className="rounded-xl bg-muted p-3 text-xs text-muted-foreground"><p><strong>Plano:</strong> {data?.company?.status === 'active' ? 'Activo' : data?.company?.status === 'pending' ? 'Pendente de aprovação' : 'Bloqueado'}</p>{data?.company?.contractType && <p className="mt-1"><strong>Contrato:</strong> {data.company.contractType === 'mensal' ? 'Mensal' : 'Semestral'}</p>}{data?.company?.contractEndDate && <p className="mt-1"><strong>Expira em:</strong> {date(data.company.contractEndDate)}</p>}</div><Button onClick={() => save.mutate()} disabled={save.isPending} testId="button-save-company">{save.isPending ? 'A guardar...' : 'Guardar alterações'}</Button></div></Card></div>;
 }
 
+function ProtectedAdmin({ children }: { children: ReactNode }) {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { data: me, isLoading } = useQuery({ queryKey: ['me'], queryFn: () => fetch(`${basePath}/api/me`).then(r => r.json()), enabled: isSignedIn });
+  if (!isLoaded || isLoading) return <LoadingScreen />;
+  if (!isSignedIn) return <Redirect to="/sign-in" />;
+  if (!me?.isPlatformAdmin) return <Redirect to="/dashboard" />;
+  return <AppShell>{children}</AppShell>;
+}
+
+function AdminPage() {
+  const queryClient = useQueryClient();
+  const [tab, setTab] = useState<'pending' | 'active' | 'blocked'>('pending');
+  const metrics = useQuery({ queryKey: ['admin-dashboard'], queryFn: () => fetch(`${basePath}/api/admin/dashboard`).then(r => r.json()) });
+  const companies = useQuery({ queryKey: ['admin-companies', tab], queryFn: () => fetch(`${basePath}/api/admin/companies?status=${tab}`).then(r => r.json()) });
+  const [contractType, setContractType] = useState<'mensal' | 'semestral'>('mensal');
+  const approve = useMutation({
+    mutationFn: (id: number) => fetch(`${basePath}/api/admin/companies/${id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contractType }) }).then(r => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-companies'] }); queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] }); },
+  });
+  const block = useMutation({
+    mutationFn: (id: number) => fetch(`${basePath}/api/admin/companies/${id}/block`, { method: 'POST' }).then(r => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-companies'] }); queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] }); },
+  });
+  const setPending = useMutation({
+    mutationFn: (id: number) => fetch(`${basePath}/api/admin/companies/${id}/pending`, { method: 'POST' }).then(r => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-companies'] }); queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] }); },
+  });
+  const m = metrics.data;
+  return <div className="animate-rise">
+    <PageIntro eyebrow="Plataforma" title="Administração" detail="Aprove contas, acompanhe contratos e o desempenho geral." />
+    <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <Card className="p-4"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-muted-foreground">Total de contas</p><p className="mt-1 text-2xl font-extrabold">{m?.totalCompanies ?? '—'}</p></Card>
+      <Card className="p-4"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-muted-foreground">Activas</p><p className="mt-1 text-2xl font-extrabold text-[#28795b]">{m?.active ?? '—'}</p></Card>
+      <Card className="p-4"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-muted-foreground">Pendentes</p><p className="mt-1 text-2xl font-extrabold text-[#98721d]">{m?.pending ?? '—'}</p></Card>
+      <Card className="p-4"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-muted-foreground">Bloqueadas</p><p className="mt-1 text-2xl font-extrabold text-[#98453c]">{m?.blocked ?? '—'}</p></Card>
+    </div>
+    {m?.expiringSoon?.length > 0 && <Card className="mb-6 border-l-4 border-l-[#98721d] p-4"><p className="text-sm font-extrabold">Contratos a expirar em breve</p><ul className="mt-2 space-y-1 text-sm text-muted-foreground">{m.expiringSoon.map((c: any) => <li key={c.id}>{c.name} — expira {date(c.contractEndDate)}</li>)}</ul></Card>}
+    <div className="mb-4 flex gap-2">
+      <Button variant={tab === 'pending' ? 'primary' : 'soft'} onClick={() => setTab('pending')}>Pendentes</Button>
+      <Button variant={tab === 'active' ? 'primary' : 'soft'} onClick={() => setTab('active')}>Activas</Button>
+      <Button variant={tab === 'blocked' ? 'primary' : 'soft'} onClick={() => setTab('blocked')}>Bloqueadas</Button>
+    </div>
+    {tab === 'pending' && <div className="mb-4"><SelectField label="Contrato ao aprovar" value={contractType} onChange={(e) => setContractType(e.target.value as any)}><option value="mensal">Mensal</option><option value="semestral">Semestral</option></SelectField></div>}
+    <Card className="overflow-hidden">
+      {companies.isLoading ? <SkeletonRows /> : !companies.data?.items?.length ? <EmptyState icon={Users} title="Nada por aqui" detail="Não há contas nesta categoria." /> :
+      <div className="divide-y divide-border">{companies.data.items.map((c: any) => <div key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
+        <div><p className="text-sm font-extrabold">{c.name}</p><p className="text-[11px] text-muted-foreground">{c.contractType ? `${c.contractType} · expira ${c.contractEndDate ? date(c.contractEndDate) : '—'}` : 'sem contrato'}</p></div>
+        <div className="flex gap-2">
+          {tab !== 'active' && <Button variant="primary" onClick={() => approve.mutate(c.id)} disabled={approve.isPending}>Aprovar</Button>}
+          {tab !== 'blocked' && <Button variant="outline" onClick={() => block.mutate(c.id)} disabled={block.isPending}>Bloquear</Button>}
+          {tab === 'blocked' && <Button variant="soft" onClick={() => setPending.mutate(c.id)} disabled={setPending.isPending}>Reabrir</Button>}
+        </div>
+      </div>)}</div>}
+    </Card>
+  </div>;
+}
+
 function SignInPage() { return <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4"><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></div>; }
 function SignUpPage() { return <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4"><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></div>; }
-function AuthRoutes() { const [, setLocation] = useLocation(); const stripBase = (path: string) => basePath && path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path; return <ClerkProvider publishableKey={clerkPubKey} appearance={appearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={{ signIn: { start: { title: 'Bem-vindo de volta', subtitle: 'Entre para aceder ao seu espaço EMIRAS' } }, signUp: { start: { title: 'Crie o seu espaço', subtitle: 'Comece a organizar o seu negócio hoje' } } }} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><QueryClientProvider client={queryClient}><Switch><Route path="/" component={HomeRedirect} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route path="/dashboard"><Protected><Dashboard /></Protected></Route><Route path="/products"><Protected><Products /></Protected></Route><Route path="/stock"><Protected><Stock /></Protected></Route><Route path="/sales"><Protected><Sales /></Protected></Route><Route path="/customers"><Protected><Customers /></Protected></Route><Route path="/categories"><Protected><Categories /></Protected></Route><Route path="/profile/*?"><Protected><ProfilePage /></Protected></Route><Route path="/settings"><Protected><SettingsPage /></Protected></Route><Route component={NotFound} /></Switch></QueryClientProvider></ClerkProvider>; }
+function AuthRoutes() { const [, setLocation] = useLocation(); const stripBase = (path: string) => basePath && path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path; return <ClerkProvider publishableKey={clerkPubKey} appearance={appearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={{ signIn: { start: { title: 'Bem-vindo de volta', subtitle: 'Entre para aceder ao seu espaço EMIRAS' } }, signUp: { start: { title: 'Crie o seu espaço', subtitle: 'Comece a organizar o seu negócio hoje' } } }} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><QueryClientProvider client={queryClient}><Switch><Route path="/" component={HomeRedirect} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route path="/dashboard"><Protected><Dashboard /></Protected></Route><Route path="/products"><Protected><Products /></Protected></Route><Route path="/stock"><Protected><Stock /></Protected></Route><Route path="/sales"><Protected><Sales /></Protected></Route><Route path="/customers"><Protected><Customers /></Protected></Route><Route path="/categories"><Protected><Categories /></Protected></Route><Route path="/profile/*?"><Protected><ProfilePage /></Protected></Route><Route path="/settings"><Protected><SettingsPage /></Protected></Route>
+<Route path="/admin"><ProtectedAdmin><AdminPage /></ProtectedAdmin></Route>
+<Route component={NotFound} /></Switch></QueryClientProvider></ClerkProvider>; }
 function App() { if (!clerkPubKey) return <LoadingScreen />; return <WouterRouter base={basePath}><AuthRoutes /></WouterRouter>; }
 export default App;

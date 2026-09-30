@@ -76,6 +76,7 @@ export const customersTable = pgTable("customers", {
   companyId: integer("company_id").notNull().references(() => companiesTable.id),
   name: text("name").notNull(),
   phone: text("phone"),
+  birthDate: timestamp("birth_date", { withTimezone: true }),
   email: text("email"),
   address: text("address"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
