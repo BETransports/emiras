@@ -9,7 +9,7 @@ import {
   LayoutDashboard, LifeBuoy, LogOut, Menu, Package, Plus, Search,
   Settings, ShoppingCart, SlidersHorizontal, Tags, TrendingUp,
   Upload, UserCircle, Users, X, Zap,
-, ShieldCheck } from 'lucide-react';
+  ShieldCheck } from 'lucide-react';
 import {
   getGetDashboardSummaryQueryKey, getListCategoriesQueryKey,
   getListCustomersQueryKey, getListProductsQueryKey, getListSalesQueryKey,
