@@ -28,7 +28,8 @@ const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL || undefined;
-const money = (value = 0) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(value);
+let activeCurrency = 'AOA';
+const money = (value = 0) => new Intl.NumberFormat(activeCurrency === 'USD' ? 'en-US' : activeCurrency === 'EUR' ? 'pt-PT' : 'pt-AO', { style: 'currency', currency: activeCurrency, maximumFractionDigits: 0 }).format(value);
 const compactMoney = (value = 0) => `${(value / 1000).toFixed(value > 100000 ? 0 : 1)}k`;
 const date = (value?: string) => value ? new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '—';
 
@@ -142,7 +143,20 @@ function AppShell({ children }: { children: ReactNode }) {
   </div>;
 }
 
-function Protected({ children }: { children: ReactNode }) { const { isLoaded, isSignedIn } = useAuth(); if (!isLoaded) return <LoadingScreen />; return isSignedIn ? <AppShell>{children}</AppShell> : <Redirect to="/sign-in" />; }
+function PendingScreen({ status }: { status: string }) {
+  const { signOut } = useClerk();
+  return <div className="grid min-h-[100dvh] place-items-center bg-background px-4"><div className="max-w-sm text-center"><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-secondary text-primary"><ClipboardList size={27} /></span><h1 className="mt-5 text-xl font-extrabold">{status === 'blocked' ? 'Acesso suspenso' : 'A aguardar aprovação'}</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">{status === 'blocked' ? 'O acesso a esta conta foi suspenso. Contacte a equipa EMIRAS para mais informações.' : 'A sua conta está pendente de aprovação pela equipa EMIRAS. Assim que for activada, poderá aceder ao seu espaço.'}</p><Button variant="soft" className="mt-6" onClick={() => signOut({ redirectUrl: basePath || '/' })}>Terminar sessão</Button></div></div>;
+}
+
+function Protected({ children }: { children: ReactNode }) {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { data: me, isLoading } = useQuery({ queryKey: ['me'], queryFn: () => fetch(`${basePath}/api/me`).then(r => r.json()), enabled: isSignedIn });
+  useEffect(() => { if (me?.company?.currency) activeCurrency = me.company.currency; }, [me]);
+  if (!isLoaded || (isSignedIn && isLoading)) return <LoadingScreen />;
+  if (!isSignedIn) return <Redirect to="/sign-in" />;
+  if (me?.company?.status && me.company.status !== 'active') return <PendingScreen status={me.company.status} />;
+  return <AppShell>{children}</AppShell>;
+}
 
 function PageIntro({ eyebrow, title, detail, action }: { eyebrow: string; title: string; detail?: string; action?: ReactNode }) { return <div className="mb-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="mb-2 text-[11px] font-extrabold uppercase tracking-[.18em] text-accent">{eyebrow}</p><h1 className="text-3xl font-extrabold tracking-[-.05em] text-foreground sm:text-4xl">{title}</h1>{detail && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{detail}</p>}</div>{action}</div>; }
 function Button({ children, variant = 'primary', onClick, type = 'button', className = '', disabled = false, testId, ariaPressed }: { children: ReactNode; variant?: 'primary' | 'soft' | 'outline' | 'ghost'; onClick?: () => void; type?: 'button' | 'submit'; className?: string; disabled?: boolean; testId?: string; ariaPressed?: boolean }) { return <button type={type} onClick={onClick} disabled={disabled} aria-pressed={ariaPressed} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold transition-all disabled:cursor-not-allowed disabled:opacity-50 ${variant === 'primary' ? 'bg-primary text-primary-foreground shadow-[0_4px_0_hsl(var(--primary)/.2)] hover:-translate-y-0.5' : variant === 'soft' ? 'bg-muted text-foreground hover:bg-border' : variant === 'outline' ? 'border border-border bg-card text-foreground hover:bg-muted' : 'text-muted-foreground hover:bg-muted hover:text-foreground'} ${className}`} data-testid={testId}>{children}</button>; }
