@@ -29,8 +29,7 @@ router.post("/companies/:id/approve", async (req, res) => {
   try {
     const companyId = Number(req.params.id);
     const { contractType } = req.body as { contractType: "mensal" | "semestral" };
-    const adminUserId = (req as AuthenticatedRequest).userId;
-
+    const adminUserId = (req as unknown as AuthenticatedRequest).userId;
     if (!adminUserId) {
       res.status(401).json({ error: "Utilizador não autenticado" });
       return;
