@@ -60,15 +60,29 @@ export const requireActiveCompany: RequestHandler = async (
 ): Promise<void> => {
   const companyId = getCompanyId(req);
   const [company] = await db
-    .select({ status: companiesTable.status })
+    .select({ status: companiesTable.status, contractEndDate: companiesTable.contractEndDate })
     .from(companiesTable)
     .where(eq(companiesTable.id, companyId))
     .limit(1);
 
-  if (!company || company.status !== "active") {
-    res.status(403).json({ error: "Conta pendente de aprovação ou bloqueada", status: company?.status ?? "pending" });
+  if (!company) {
+    res.status(403).json({ error: "Empresa não encontrada", status: "pending" });
     return;
   }
+
+  const expired = company.contractEndDate !== null && company.contractEndDate < new Date();
+
+  if (expired && company.status === "active") {
+    await db.update(companiesTable).set({ status: "pending" }).where(eq(companiesTable.id, companyId));
+    res.status(403).json({ error: "Subscrição expirada. Contacte a equipa EMIRAS para renovar.", status: "pending" });
+    return;
+  }
+
+  if (company.status !== "active") {
+    res.status(403).json({ error: "Conta pendente de aprovação ou bloqueada", status: company.status });
+    return;
+  }
+
   next();
 };
 
