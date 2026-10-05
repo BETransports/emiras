@@ -21,12 +21,14 @@ router.use(storageRouter);
 // 2. Middleware de Autenticação Obrigatória para as rotas abaixo
 router.use(requireAuth);
 
-// 3. Rotas de Admin (não exigem empresa ativa, mas estão sob /api/admin)
+// 3. Rotas de Admin (não exigem empresa ativa) — mantém o prefixo /api/admin
 router.use("/api/admin", adminRouter);
 
-// 4. Rotas do Cliente/Empresa (exigem empresa ativa)
-router.use(requireActiveCompany);
+// 4. /api/me precisa de responder mesmo com empresa pendente (é ele quem informa o status)
 router.use(meRouter);
+
+// 5. Rotas do Cliente/Empresa (exigem empresa ativa)
+router.use(requireActiveCompany);
 router.use(dashboardRouter);
 router.use(productsRouter);
 router.use(categoriesRouter);
