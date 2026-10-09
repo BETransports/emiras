@@ -61,6 +61,7 @@ export const productsTable = pgTable(
     minStock: integer("min_stock").notNull().default(0),
     unit: text("unit").notNull().default("un"),
     active: integer("active").notNull().default(1),
+    blockedByAdmin: integer("blocked_by_admin").notNull().default(0),
     imageUrl: text("image_url"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -125,6 +126,14 @@ export const saleItemsTable = pgTable("sale_items", {
   total: numeric("total", { precision: 12, scale: 2 }).notNull(),
 });
 
+export const notificationsTable = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companiesTable.id),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const insertCategorySchema = createInsertSchema(categoriesTable).omit({
   id: true,
   createdAt: true,
@@ -154,6 +163,7 @@ export type Customer = typeof customersTable.$inferSelect;
 export type StockMovement = typeof stockMovementsTable.$inferSelect;
 export type Sale = typeof salesTable.$inferSelect;
 export type SaleItem = typeof saleItemsTable.$inferSelect;
+export type Notification = typeof notificationsTable.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Company = typeof companiesTable.$inferSelect;

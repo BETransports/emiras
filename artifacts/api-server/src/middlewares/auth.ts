@@ -32,18 +32,33 @@ export const requireAuth: RequestHandler = async (
   let isPlatformAdmin = existing[0]?.isPlatformAdmin === 1;
 
   if (!companyId) {
-    const [company] = await db
-      .insert(companiesTable)
-      .values({ name: "Minha empresa", currency: "AOA", status: "pending" })
-      .returning({ id: companiesTable.id });
-    companyId = company.id;
+    try {
+      const [company] = await db
+        .insert(companiesTable)
+        .values({ name: "Minha empresa", currency: "AOA", status: "pending" })
+        .returning({ id: companiesTable.id });
+      companyId = company.id;
 
-    await db.insert(usersTable).values({
-      clerkUserId: userId,
-      companyId,
-      name: "Administrador",
-      role: "ADMIN",
-    });
+      await db.insert(usersTable).values({
+        clerkUserId: userId,
+        companyId,
+        name: "Administrador",
+        role: "ADMIN",
+      });
+    } catch {
+      // Outro pedido em paralelo já criou o registo — usa o que já existe
+      const retry = await db
+        .select({ companyId: usersTable.companyId, isPlatformAdmin: usersTable.isPlatformAdmin })
+        .from(usersTable)
+        .where(eq(usersTable.clerkUserId, userId))
+        .limit(1);
+      if (!retry[0]) {
+        res.status(500).json({ error: "Erro ao criar conta" });
+        return;
+      }
+      companyId = retry[0].companyId;
+      isPlatformAdmin = retry[0].isPlatformAdmin === 1;
+    }
   }
 
   const authenticated = req as AuthenticatedRequest;

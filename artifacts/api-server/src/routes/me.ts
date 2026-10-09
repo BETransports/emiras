@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { desc, eq, isNull, or } from "drizzle-orm";
 import { Router, type IRouter } from "express";
-import { db, companiesTable, usersTable } from "@workspace/db";
+import { db, companiesTable, usersTable, paymentLogsTable, notificationsTable } from "@workspace/db";
 import { getCompanyId, type AuthenticatedRequest } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -53,6 +53,29 @@ router.patch("/company", async (req, res) => {
     .where(eq(companiesTable.id, companyId));
 
   res.json({ success: true });
+});
+
+// Histórico de pagamentos da própria empresa
+router.get("/payments", async (req, res) => {
+  const companyId = getCompanyId(req);
+  const rows = await db
+    .select()
+    .from(paymentLogsTable)
+    .where(eq(paymentLogsTable.companyId, companyId))
+    .orderBy(desc(paymentLogsTable.createdAt));
+  res.json({ items: rows });
+});
+
+// Notificações da própria empresa + comunicados gerais (companyId null)
+router.get("/notifications", async (req, res) => {
+  const companyId = getCompanyId(req);
+  const rows = await db
+    .select()
+    .from(notificationsTable)
+    .where(or(eq(notificationsTable.companyId, companyId), isNull(notificationsTable.companyId)))
+    .orderBy(desc(notificationsTable.createdAt))
+    .limit(20);
+  res.json({ items: rows });
 });
 
 export default router;
