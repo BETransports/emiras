@@ -386,8 +386,8 @@ function AdminPage() {
     <Card className="overflow-hidden">
       {companies.isLoading ? <SkeletonRows /> : !companies.data?.items?.length ? <EmptyState icon={Users} title="Nada por aqui" detail="Não há contas nesta categoria." /> :
       <div className="divide-y divide-border">{companies.data.items.map((c: any) => <div key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
-        <div><p className="text-sm font-extrabold">{c.ownerName || c.name}</p><p className="text-[11px] text-muted-foreground">Pedido em {date(c.createdAt)}{c.contractType ? ` · ${c.contractType}` : ''}</p></div>
-        <div className="flex gap-2">
+        <div><p className="text-sm font-extrabold">{c.name}</p><p className="text-[11px] text-muted-foreground">Pedido em {date(c.createdAt)}{c.contractType ? ` · ${c.contractType}` : ''}</p></div>
+        <div className="flex gap-2">           
           {tab !== 'active' && <Button variant="primary" onClick={() => approve.mutate(c.id)} disabled={approve.isPending}>Aprovar</Button>}
           {tab !== 'blocked' && <Button variant="outline" onClick={() => block.mutate(c.id)} disabled={block.isPending}>Bloquear</Button>}
           {tab === 'blocked' && <Button variant="soft" onClick={() => setPending.mutate(c.id)} disabled={setPending.isPending}>Reabrir</Button>}
