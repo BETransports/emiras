@@ -20,8 +20,17 @@ router.get("/companies", async (req, res) => {
   try {
     const status = req.query.status as string | undefined;
     const rows = await db
-      .select()
+      .select({
+        id: companiesTable.id,
+        name: companiesTable.name,
+        status: companiesTable.status,
+        contractType: companiesTable.contractType,
+        contractEndDate: companiesTable.contractEndDate,
+        createdAt: companiesTable.createdAt,
+        ownerName: usersTable.name,
+      })
       .from(companiesTable)
+      .leftJoin(usersTable, eq(usersTable.companyId, companiesTable.id))
       .where(status ? eq(companiesTable.status, status) : undefined)
       .orderBy(desc(companiesTable.createdAt));
 
