@@ -22,7 +22,7 @@ router.use(storageRouter);
 router.use(requireAuth);
 
 // 3. Rotas de Admin (não exigem empresa ativa) — mantém o prefixo /api/admin
-router.use("/api/admin", adminRouter);
+router.use("/admin", adminRouter);
 
 // 4. /api/me precisa de responder mesmo com empresa pendente (é ele quem informa o status)
 router.use(meRouter);
